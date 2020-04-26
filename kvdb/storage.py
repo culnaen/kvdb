@@ -44,10 +44,10 @@ class Storage:
             self._data[key] = value
 
     def unset(self, transactions, key):
-            if transactions:
-                transactions[-1][key] = None
-            else:
-                del self._data[key]
+        if transactions:
+            transactions[-1][key] = None
+        else:
+            del self._data[key]
 
     def begin(self, transactions):
         transactions.append(dict())
@@ -65,15 +65,15 @@ class Storage:
                 transactions.pop()
 
     def counts(self, transactions, value):
-            total = 0
-            if transactions:
-                for k, v in transactions[-1].items():
-                    if v == value and k not in self._data:
-                        total += 1
-            for k, v in self._data.items():
-                if v == value:
+        total = 0
+        if transactions:
+            for k, v in transactions[-1].items():
+                if v == value and k not in self._data:
                     total += 1
-            return total
+        for k, v in self._data.items():
+            if v == value:
+                total += 1
+        return total
 
     @property
     def commands(self):

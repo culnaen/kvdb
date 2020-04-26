@@ -4,11 +4,11 @@ from .connection import Connection
 
 class KVDB:
     def __init__(self):
-        self.storage = Storage()
+        self._storage = Storage()
 
     def connect(self):
-        return Connection(self.storage)
+        return Connection(self._storage)
 
     @property
     def db(self):
-        return self.storage.db
+        return self._storage.db
