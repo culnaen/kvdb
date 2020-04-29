@@ -10,5 +10,5 @@ class KVDB:
         return Connection(self._storage)
 
     @property
-    def db(self):
-        return self._storage.db
+    def storage(self):
+        return self._storage.data
