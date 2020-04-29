@@ -1,4 +1,3 @@
-from typing import Deque, Dict, Any, Union
 from threading import Lock
 from enum import Enum
 
@@ -56,7 +55,7 @@ class Storage:
     def rollback(self, transactions):
         transactions.pop()
 
-    def commit(self, transactions: Deque[Dict]):
+    def commit(self, transactions):
         with self._lock:
             self._commit(transactions)
             transactions.clear()
@@ -74,14 +73,20 @@ class Storage:
 
     def counts(self, transactions, value):
         total = 0
+        keys = set()
         if transactions:
-            for k, v in transactions[-1].items():
-                if v == value and k not in self._data:
-                    total += 1
-        for k, v in self._data.items():
-            if v == value:
-                total += 1
+            total += self._counts(value, transactions[-1], keys)
+        total += self._counts(value, self._data, keys)
         return total
+
+    def _counts(self, value, storage, keys):
+        count = 0
+        for k, v in storage.items():
+            if k not in keys:
+                keys.add(k)
+                if v == value:
+                    count += 1
+        return count
 
     @property
     def commands(self):
