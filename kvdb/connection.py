@@ -1,13 +1,14 @@
 import time
 from collections import deque
 
-from .storage import Command
+from .storage import Command, Storage
+from .type import DequeTransactions
 
 
 class Connection:
-    def __init__(self, storage):
+    def __init__(self, storage: Storage):
         self._storage = storage
-        self._local_transactions = deque()
+        self._local_transactions: DequeTransactions = deque()
 
     def __enter__(self):
         return self
@@ -15,7 +16,7 @@ class Connection:
     def __exit__(self, exc_type, exc_val, exc_tb):
         return self.close()
 
-    def execute(self, data):
+    def execute(self, data: str):
         cmd, args = self.parse_data(data)
         return self._storage.commands[cmd](self._local_transactions, *args)
 
