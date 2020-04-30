@@ -1,7 +1,7 @@
 # kvdb
 
 ## use
-```
+```python
 from kvdb import KVDB
 
 
