@@ -1,8 +1,8 @@
-from typing import Dict, Optional, Set, MutableSequence
+from typing import Dict, Optional, Set
 from threading import Lock
 from enum import Enum
 
-from .type import DequeTransactions
+from .types import QueueTransactions
 
 
 class Command(Enum):
@@ -30,40 +30,40 @@ class Storage:
             Command.COMMIT: self.commit,
         }
 
-    def get(self, transactions: DequeTransactions, key: str):
+    def get(self, transactions: QueueTransactions, key: str):
         return self._get(transactions, key)
 
-    def _get(self, transactions: DequeTransactions, key: str):
+    def _get(self, transactions: QueueTransactions, key: str):
         if transactions:
             result = transactions[-1].get(key)
             if result is not None:
                 return result
         return self._data.get(key)
 
-    def set(self, transactions: DequeTransactions, key: str, value: str):
+    def set(self, transactions: QueueTransactions, key: str, value: str):
         if transactions:
             transactions[-1][key] = value
         else:
             self._data[key] = value
 
-    def unset(self, transactions: DequeTransactions, key: str):
+    def unset(self, transactions: QueueTransactions, key: str):
         if transactions:
             transactions[-1][key] = None
         else:
-            del self._data[key]
+            self._data.pop(key, None)
 
-    def begin(self, transactions: DequeTransactions):
+    def begin(self, transactions: QueueTransactions):
         transactions.append(dict())
 
-    def rollback(self, transactions: DequeTransactions):
+    def rollback(self, transactions: QueueTransactions):
         transactions.pop()
 
-    def commit(self, transactions: DequeTransactions):
+    def commit(self, transactions: QueueTransactions):
         with self._lock:
             self._commit(transactions)
             transactions.clear()
 
-    def _commit(self, transactions: DequeTransactions):
+    def _commit(self, transactions: QueueTransactions):
         transactions_data = {}
         for transaction in transactions:
             for key, value in transaction.items():
@@ -74,7 +74,7 @@ class Storage:
             else:
                 self._data[key] = value
 
-    def counts(self, transactions: DequeTransactions, value: str):
+    def counts(self, transactions: QueueTransactions, value: str):
         total = 0
         keys: Set[str] = set()
         if transactions:

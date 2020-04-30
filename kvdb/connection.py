@@ -1,14 +1,12 @@
-import time
 from collections import deque
 
 from .storage import Command, Storage
-from .type import DequeTransactions
 
 
 class Connection:
     def __init__(self, storage: Storage):
         self._storage = storage
-        self._local_transactions: DequeTransactions = deque()
+        self._local_transactions: deque = deque()
 
     def __enter__(self):
         return self
@@ -26,7 +24,7 @@ class Connection:
         return cmd, args
 
     def close(self):
-        time.sleep(0.1)
+        self._local_transactions.clear()
 
     @property
     def transactions(self):
