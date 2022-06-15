@@ -1,6 +1,8 @@
-from typing import Dict, Optional, Set
-from threading import Lock
 from enum import Enum
+import threading
+from typing import Dict, Optional, Set
+
+
 
 from .types import QueueTransactions
 
@@ -17,9 +19,9 @@ class Command(Enum):
 
 
 class Storage:
-    def __init__(self):
+    def __init__(self, lock: threading.RLock):
+        self._lock = lock
         self._data = {}
-        self._lock = Lock()
         self._commands = {
             Command.GET: self.get,
             Command.SET: self.set,
@@ -45,23 +47,30 @@ class Storage:
             transactions[-1][key] = value
         else:
             self._data[key] = value
+        return "ok"
 
     def unset(self, transactions: QueueTransactions, key: str):
         if transactions:
             transactions[-1][key] = None
         else:
             self._data.pop(key, None)
+        return "ok"
 
     def begin(self, transactions: QueueTransactions):
+        self._lock.acquire()
         transactions.append(dict())
+        return "begin"
 
     def rollback(self, transactions: QueueTransactions):
         transactions.pop()
+        self._lock.release()
+        return "rollback"
 
     def commit(self, transactions: QueueTransactions):
-        with self._lock:
-            self._commit(transactions)
-            transactions.clear()
+        self._commit(transactions)
+        transactions.clear()
+        self._lock.release()
+        return "commit"
 
     def _commit(self, transactions: QueueTransactions):
         transactions_data = {}
