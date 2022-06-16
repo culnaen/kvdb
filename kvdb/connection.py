@@ -1,6 +1,10 @@
 from collections import deque
+import logging
 
 from .storage import Command, Storage
+
+
+logger = logging.getLogger(__name__)
 
 
 class Connection:
@@ -15,8 +19,12 @@ class Connection:
         return self.close()
 
     def execute(self, data: str):
-        cmd, args = self.parse_data(data)
-        return self._storage.commands[cmd](self._local_transactions, *args)
+        try:
+            cmd, args = self.parse_data(data)
+            return self._storage.commands[cmd](self._local_transactions, *args)
+        except Exception as error:
+            logger.error(error)
+            return error
 
     def parse_data(self, data: str):
         cmd_name, *args = data.split()
